@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  BU QR Code Generator
  * Description:  Generate and manage QR code hashes for the bu-qr-code post type.
- * Version:      1.0.0
+ * Version:      1.0.1
  * Author:       Sashe Vuchkov
  * Text Domain:  bu-qr-generator
  */
@@ -353,10 +353,17 @@ function buqr_handle_confirmation_page(): void {
 
 	// Only stamp confirmed_at the first time the link is opened.
 	$confirmed_at = get_post_meta( $post_id, 'bu_confirmed_at', true );
+	$qr_code = get_post_meta( $post_id, 'bu_qr_code', true );
 
 	if ( empty( $confirmed_at ) ) {
 		update_post_meta( $post_id, 'bu_confirmed_at', current_time( 'mysql' ) );
 	}
+
+	wp_safe_redirect( add_query_arg(
+		[ 'code' => $qr_code ],
+		buqr_get_page_url( 'buqr_congratulations_page_id' )
+	) );
+	exit;
 
 	// Page continues to load normally — no exit.
 }
