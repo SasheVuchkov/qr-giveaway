@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  BU QR Code Generator
  * Description:  Generate and manage QR code hashes for the bu-qr-code post type.
- * Version:      1.0.6
+ * Version:      1.0.7
  * Author:       Sashe Vuchkov
  * Text Domain:  bu-qr-generator
  */
@@ -433,6 +433,9 @@ function buqr_handle_confirmation_page(): void {
 		return;
 	}
 
+	// Tell caching plugins / CDNs not to cache this response.
+	nocache_headers();
+
 	$c_hash = sanitize_text_field( wp_unslash( $_GET['c_hash'] ) );
 
 	$post_id = buqr_get_post_id_by_confirmation_hash( $c_hash );
@@ -442,12 +445,13 @@ function buqr_handle_confirmation_page(): void {
 		exit;
 	}
 
-	// Only stamp confirmed_at the first time the link is opened.
+	$qr_code      = get_post_meta( $post_id, 'bu_qr_code',      true );
 	$confirmed_at = get_post_meta( $post_id, 'bu_confirmed_at', true );
-	$qr_code = get_post_meta( $post_id, 'bu_qr_code', true );
 
+	// Stamp the first confirmation visit; allow re-visits without overwriting.
 	if ( empty( $confirmed_at ) ) {
-		update_post_meta( $post_id, 'bu_confirmed_at', current_time( 'mysql' ) );
+		$now = current_time( 'mysql' );
+		update_post_meta( $post_id, 'bu_confirmed_at', $now );
 	}
 
 	wp_safe_redirect( add_query_arg(
@@ -485,10 +489,16 @@ function buqr_render_list_column( string $column, int $post_id ): void {
 	switch ( $column ) {
 
 		case 'buqr_status':
-			$claimed = get_post_meta( $post_id, 'bu_claimed_at', true );
-			if ( $claimed ) {
-				echo '<span class="buqr-badge buqr-badge--used">'
-					. esc_html__( 'Used', 'bu-qr-generator' )
+			$claimed    = get_post_meta( $post_id, 'bu_claimed_at',   true );
+			$confirmed  = get_post_meta( $post_id, 'bu_confirmed_at', true );
+
+			if ( $confirmed ) {
+				echo '<span class="buqr-badge buqr-badge--confirmed">'
+					. esc_html__( 'Confirmed', 'bu-qr-generator' )
+					. '</span>';
+			} elseif ( $claimed ) {
+				echo '<span class="buqr-badge buqr-badge--claimed">'
+					. esc_html__( 'Claimed', 'bu-qr-generator' )
 					. '</span>';
 			} else {
 				echo '<span class="buqr-badge buqr-badge--free">'
@@ -597,10 +607,16 @@ function buqr_column_styles(): void {
 			border: 1px solid #b8e6c1;
 		}
 
-		.buqr-badge--used {
-			background: #fce8e8;
-			color: #8f1e20;
-			border: 1px solid #f5c6c6;
+		.buqr-badge--claimed {
+			background: #fef8ec;
+			color: #8a5500;
+			border: 1px solid #f5d97a;
+		}
+
+		.buqr-badge--confirmed {
+			background: #e8f4fc;
+			color: #1a5276;
+			border: 1px solid #aed6f1;
 		}
 
 		.buqr-none { color: #c3c4c7; }
