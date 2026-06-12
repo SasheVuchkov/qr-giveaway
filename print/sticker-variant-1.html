@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 1 · Clean)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --ink: #0a0a0b;
+      --gold: #f5b82e;
+      --gold-dark: #9c7a26;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #e9e9ec; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .sticker {
+      width: 60mm;
+      height: 60mm;
+      background: #ffffff;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4.4mm 4mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* thin gold inner frame */
+    .sticker::before {
+      content: "";
+      position: absolute;
+      inset: 1.6mm;
+      border: 0.4mm solid var(--gold);
+      border-radius: 3mm;
+      pointer-events: none;
+    }
+
+    .head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      height: 10mm;
+      width: auto;
+      color: var(--ink);
+    }
+
+    .divider {
+      width: 26mm;
+      height: 0.5mm;
+      background: var(--gold);
+      border-radius: 1mm;
+      margin-top: 1.8mm;
+    }
+
+    .qr-wrap {
+      background: #fff;
+      padding: 1mm;
+      border-radius: 1.5mm;
+      box-shadow: 0 0 0 0.3mm rgba(10, 10, 11, 0.12);
+    }
+
+    .qr-wrap img {
+      width: 29mm;
+      height: 29mm;
+      display: block;
+    }
+
+    .blurb {
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3.5mm;
+      letter-spacing: 0.1mm;
+      text-align: center;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    @media screen {
+      .sticker {
+        border-radius: 4mm;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+    <div class="head">
+      <!-- LOGO · horizontal: shield + wordmark -->
+      <svg class="logo" viewBox="0 0 470 156" role="img" aria-label="Fifth Base">
+        <g fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M22 26 H54 L60 34 L66 26 H98 C98 82 90 106 60 128 C30 106 22 82 22 26 Z" />
+          <path d="M60 126 V134" />
+        </g>
+        <text x="60" y="104" text-anchor="middle" font-family="Anton, 'Arial Narrow', sans-serif" font-size="60" fill="currentColor">5</text>
+        <text x="128" y="102" font-family="'Roboto Slab', Georgia, serif" font-weight="800" font-size="64" fill="currentColor">Fifth Base</text>
+      </svg>
+      <div class="divider"></div>
+    </div>
+
+    <!-- QR · replace the data= URL with your giveaway link -->
+    <div class="qr-wrap">
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=H&data=https://fifthbase.example.com/giveaway"
+        alt="QR код за участие"
+      />
+    </div>
+
+    <p class="blurb">Сканирай, за да участваш</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 2 · Bold)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --ink: #0a0a0b;
+      --gold: #f5b82e;
+      --gold-dark: #9c7a26;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #e9e9ec; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .sticker {
+      width: 60mm;
+      height: 60mm;
+      background: #ffffff;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5mm 4.5mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* decorative gold corner brackets */
+    .corner {
+      position: absolute;
+      width: 6mm;
+      height: 6mm;
+      border: 0.6mm solid var(--gold);
+    }
+    .corner.tl { top: 2mm; left: 2mm; border-right: none; border-bottom: none; border-top-left-radius: 1.5mm; }
+    .corner.tr { top: 2mm; right: 2mm; border-left: none; border-bottom: none; border-top-right-radius: 1.5mm; }
+    .corner.bl { bottom: 2mm; left: 2mm; border-right: none; border-top: none; border-bottom-left-radius: 1.5mm; }
+    .corner.br { bottom: 2mm; right: 2mm; border-left: none; border-top: none; border-bottom-right-radius: 1.5mm; }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 2.2mm;
+    }
+
+    .logo-mark {
+      height: 8mm;
+      width: 8mm;
+      object-fit: contain;
+      /* invert the white-on-transparent SVG to dark-on-white */
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-family: "Roboto Slab", Georgia, serif;
+      font-weight: 400;
+      font-size: 4.8mm;
+      letter-spacing: 0.2mm;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+      position: relative;
+      top: -mm;
+    }
+
+    .qr-frame {
+      background: #fff;
+      padding: 1.4mm;
+      border: 0.6mm solid var(--gold);
+      border-radius: 2mm;
+      box-shadow: 0 0 0 0.3mm rgba(156, 122, 38, 0.25);
+    }
+
+    .qr-frame img {
+      width: 28mm;
+      height: 28mm;
+      display: block;
+    }
+
+    .foot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2mm;
+    }
+
+    .stars {
+      color: var(--gold);
+      font-size: 2.6mm;
+      letter-spacing: 1mm;
+      line-height: 1;
+    }
+
+    .blurb-pill {
+      background: #ffffff;
+      color: var(--ink);
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3.2mm;
+      letter-spacing: 0.1mm;
+      text-align: center;
+      line-height: 1;
+      padding: 1.8mm 3mm;
+      border-radius: 99mm;
+      white-space: nowrap;
+    }
+
+    @media screen {
+      .sticker {
+        border-radius: 4mm;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+
+    <!-- LOGO · mark + wordmark, horizontal -->
+    <div class="logo-row">
+      <img class="logo-mark" src="./logo-transparent-600-black.svg" alt="" aria-hidden="true" />
+      <span class="logo-name">Fifth Base</span>
+    </div>
+
+    <!-- QR · replace the data= URL with your giveaway link -->
+    <div class="qr-frame">
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=H&data=https://fifthbase.example.com/giveaway"
+        alt="QR код за участие"
+      />
+    </div>
+
+    <div class="foot">
+      <p class="blurb-pill">Сканирай, за да участваш</p>
+    </div>
+  </div>
+</body>
+</html>

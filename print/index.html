@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикери 60&times;60 (преглед)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: #0a0a0b;
+      color: #f0ede0;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    h1 {
+      font-family: "Roboto Slab", serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      text-align: center;
+    }
+
+    p.sub {
+      text-align: center;
+      color: #c9c4b2;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .label {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #f5b82e;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    iframe {
+      width: 60mm;
+      height: 60mm;
+      border: 0;
+      border-radius: 4mm;
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .open-link {
+      font-size: 0.85rem;
+      color: #ffd76a;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    .open-link:hover { border-bottom-color: #ffd76a; }
+  </style>
+</head>
+<body>
+  <h1>Fifth Base &mdash; стикери 60&times;60&nbsp;mm</h1>
+  <p class="sub">Бял фон &middot; лого + QR код + &laquo;Сканирай, за да участваш&raquo;. Отвори всеки файл и принтирай (Ctrl/Cmd&nbsp;+&nbsp;P).</p>
+
+  <div class="grid">
+    <div class="card">
+      <span class="label">Вариант 1 · Clean</span>
+      <iframe src="./sticker-variant-1.html" title="Вариант 1"></iframe>
+      <a class="open-link" href="./sticker-variant-1.html" target="_blank" rel="noopener">Отвори за печат &rarr;</a>
+    </div>
+
+    <div class="card">
+      <span class="label">Вариант 2 · Bold</span>
+      <iframe src="./sticker-variant-2.html" title="Вариант 2"></iframe>
+      <a class="open-link" href="./sticker-variant-2.html" target="_blank" rel="noopener">Отвори за печат &rarr;</a>
+    </div>
+  </div>
+</body>
+</html>

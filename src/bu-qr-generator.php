@@ -362,6 +362,134 @@ function buqr_handle_confirmation_page(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Post list — Resend Confirmation Email row action
+// ---------------------------------------------------------------------------
+
+add_filter( 'post_row_actions', 'buqr_add_resend_row_action', 10, 2 );
+
+function buqr_add_resend_row_action( array $actions, WP_Post $post ): array {
+	if ( 'bu-qr-code' !== $post->post_type ) {
+		return $actions;
+	}
+
+	// Only show the action when the post has a participant email to send to.
+	$email = get_post_meta( $post->ID, 'bu_participant_email', true );
+
+	if ( ! $email ) {
+		return $actions;
+	}
+
+	$url = wp_nonce_url(
+		add_query_arg(
+			[
+				'action'  => 'buqr_resend_email',
+				'post_id' => $post->ID,
+			],
+			admin_url( 'admin-post.php' )
+		),
+		'buqr_resend_email_' . $post->ID
+	);
+
+	$actions['buqr_resend'] = sprintf(
+		'<a href="%s">%s</a>',
+		esc_url( $url ),
+		esc_html__( 'Resend Confirmation', 'bu-qr-generator' )
+	);
+
+	return $actions;
+}
+
+// ── Handler ────────────────────────────────────────────────────────────────
+
+add_action( 'admin_post_buqr_resend_email', 'buqr_handle_resend_email' );
+
+function buqr_handle_resend_email(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( __( 'Unauthorized.', 'bu-qr-generator' ) );
+	}
+
+	$post_id = isset( $_GET['post_id'] ) ? absint( $_GET['post_id'] ) : 0;
+
+	check_admin_referer( 'buqr_resend_email_' . $post_id );
+
+	$redirect_base = admin_url( 'edit.php?post_type=bu-qr-code' );
+
+	if ( ! $post_id || 'bu-qr-code' !== get_post_type( $post_id ) ) {
+		wp_safe_redirect( add_query_arg( 'buqr_resend' , 'invalid_post', $redirect_base ) );
+		exit;
+	}
+
+	$email   = get_post_meta( $post_id, 'bu_participant_email', true );
+	$name    = get_post_meta( $post_id, 'bu_participant_name',  true );
+	$qr_code = get_post_meta( $post_id, 'bu_qr_code',          true );
+	$c_hash  = get_post_meta( $post_id, 'bu_confirmation_hash', true );
+
+	if ( ! is_email( $email ) || ! $c_hash ) {
+		wp_safe_redirect( add_query_arg( 'buqr_resend', 'missing_data', $redirect_base ) );
+		exit;
+	}
+
+	$confirmation_link = add_query_arg(
+		[ 'c_hash' => $c_hash ],
+		buqr_get_page_url( 'buqr_confirm_page_id' )
+	);
+
+	$placeholders = [
+		'qr_code'           => $qr_code,
+		'site_name'         => get_bloginfo( 'name' ),
+		'participant_name'  => $name,
+		'confirmation_link' => $confirmation_link,
+	];
+
+	$sent = buqr_send_email( 'confirmation', $email, $placeholders );
+
+	if ( $sent ) {
+		update_post_meta( $post_id, 'bu_emailed_at', current_time( 'mysql' ) );
+		wp_safe_redirect( add_query_arg( 'buqr_resend', 'success', $redirect_base ) );
+	} else {
+		wp_safe_redirect( add_query_arg( 'buqr_resend', 'failed', $redirect_base ) );
+	}
+
+	exit;
+}
+
+// ── Admin notice feedback ───────────────────────────────────────────────────
+
+add_action( 'admin_notices', 'buqr_resend_admin_notice' );
+
+function buqr_resend_admin_notice(): void {
+	$screen = get_current_screen();
+
+	if ( ! $screen || 'edit-bu-qr-code' !== $screen->id ) {
+		return;
+	}
+
+	if ( empty( $_GET['buqr_resend'] ) ) {
+		return;
+	}
+
+	$status   = sanitize_key( $_GET['buqr_resend'] );
+	$messages = [
+		'success'      => [ 'success', __( 'Confirmation email resent successfully.', 'bu-qr-generator' ) ],
+		'failed'       => [ 'error',   __( 'The email could not be sent. Please check your site\'s mail configuration.', 'bu-qr-generator' ) ],
+		'missing_data' => [ 'warning', __( 'Cannot resend: this QR code has no participant email or confirmation hash on record.', 'bu-qr-generator' ) ],
+		'invalid_post' => [ 'error',   __( 'Cannot resend: invalid QR code record.', 'bu-qr-generator' ) ],
+	];
+
+	if ( ! isset( $messages[ $status ] ) ) {
+		return;
+	}
+
+	[ $type, $text ] = $messages[ $status ];
+
+	printf(
+		'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
+		esc_attr( $type ),
+		esc_html( $text )
+	);
+}
+
+// ---------------------------------------------------------------------------
 // Stats helpers
 // ---------------------------------------------------------------------------
 

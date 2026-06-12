@@ -1,0 +1,21 @@
+{
+  "name": "fifthbase",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/SasheVuchkov/qr-giveaway#readme",
+  "bugs": {
+    "url": "https://github.com/SasheVuchkov/qr-giveaway/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SasheVuchkov/qr-giveaway.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "archive": "node scripts/archive.js"
+  }
+}
