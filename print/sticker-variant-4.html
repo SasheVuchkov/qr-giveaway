@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 4 · Minimal)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --ink:  #0a0a0b;
+      --gold: #f5b82e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #e9e9ec; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /*
+     * NO FRAME — white bleeds to the cut edge.
+     * All content is ≥ 5 mm from every edge (safe zone).
+     * The only horizontal element is the short gold rule — it is
+     * centred and much shorter than the sticker width, so it never
+     * reads as a cut-alignment guide.
+     */
+    .sticker {
+      width:  60mm;
+      height: 60mm;
+      background: #ffffff;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5.5mm 5mm;
+    }
+
+    /* ── Logo ─────────────────────────────────────────────────────────────── */
+
+    .logo-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.6mm;
+    }
+
+    .logo-mark {
+      height: 9mm;
+      width:  9mm;
+      object-fit: contain;
+      filter: invert(1);
+    }
+
+    .logo-name {
+      font-family: "Roboto Slab", Georgia, serif;
+      font-weight: 800;
+      font-size: 4.4mm;
+      letter-spacing: 0.8mm;
+      text-transform: uppercase;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* short centred gold rule — well inside the sticker, not parallel to edges
+       in the sense that it has a visual centre-point, not a border */
+    .rule {
+      width: 20mm;
+      height: 0.5mm;
+      background: var(--gold);
+      border-radius: 1mm;
+      margin-top: 0.5mm;
+    }
+
+    /* ── QR ───────────────────────────────────────────────────────────────── */
+
+    .qr-wrap img {
+      width:  30mm;
+      height: 30mm;
+      display: block;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+
+    .blurb-pill {
+      background: var(--gold);
+      color: var(--ink);
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3mm;
+      letter-spacing: 0.1mm;
+      text-align: center;
+      line-height: 1;
+      padding: 1.8mm 4mm;
+      border-radius: 99mm;
+      white-space: nowrap;
+    }
+
+    @media screen {
+      .sticker { border-radius: 4mm; box-shadow: 0 12px 36px rgba(0,0,0,.22); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+
+    <!-- Row 1: stacked logo (mark above name) -->
+    <div class="logo-row">
+      <img class="logo-mark" src="./logo-transparent-600.svg" alt="" aria-hidden="true" />
+      <span class="logo-name">Fifth Base</span>
+      <div class="rule"></div>
+    </div>
+
+    <!-- Row 2: QR code -->
+    <div class="qr-wrap">
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=H&data=https://fifthbase.example.com/giveaway"
+        alt="QR код за участие"
+      />
+    </div>
+
+    <!-- Row 3: text blurb -->
+    <p class="blurb-pill">Сканирай, за да участваш</p>
+
+  </div>
+</body>
+</html>

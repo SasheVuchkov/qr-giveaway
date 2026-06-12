@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 6 · Styled QR)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- qr-code-styling from local node_modules (no internet dependency at print time) -->
+  <script src="../node_modules/qr-code-styling/lib/qr-code-styling.js"></script>
+
+  <style>
+    :root {
+      --ink:  #0a0a0b;
+      --gold: #f5b82e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #e9e9ec; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .sticker {
+      width:  60mm;
+      height: 60mm;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5mm 5mm 5.2mm;
+    }
+
+    /* ── Logo row ─────────────────────────────────────────────────────────── */
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .logo-mark {
+      height: 8mm;
+      width:  8mm;
+      object-fit: contain;
+      filter: invert(1);
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-family: "Roboto Slab", Georgia, serif;
+      font-weight: 800;
+      font-size: 4.6mm;
+      letter-spacing: 0.2mm;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ── QR container ─────────────────────────────────────────────────────── */
+
+    #qr-mount {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width:  30mm;
+      height: 30mm;
+    }
+
+    #qr-mount svg,
+    #qr-mount canvas {
+      width:  30mm !important;
+      height: 30mm !important;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+
+    .blurb-pill {
+      background: var(--gold);
+      color: var(--ink);
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3mm;
+      letter-spacing: 0.1mm;
+      text-align: center;
+      line-height: 1;
+      padding: 1.8mm 4mm;
+      border-radius: 99mm;
+      white-space: nowrap;
+    }
+
+    @media screen {
+      .sticker { border-radius: 4mm; box-shadow: 0 12px 36px rgba(0,0,0,.22); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+
+    <!-- Row 1: horizontal logo -->
+    <div class="logo-row">
+      <img class="logo-mark" src="./logo-transparent-600.svg" alt="" aria-hidden="true" />
+      <span class="logo-name">Fifth Base</span>
+    </div>
+
+    <!-- Row 2: styled QR code — rendered by qr-code-styling -->
+    <div id="qr-mount"></div>
+
+    <!-- Row 3: blurb -->
+    <p class="blurb-pill">Сканирай, за да участваш</p>
+
+  </div>
+
+  <script>
+    /*
+     * Center placeholder: a plain white square punched into the QR code.
+     * To add a logo later, replace CENTER_IMAGE_URL with any image URL or
+     * data URI — error-correction level H keeps the code scannable even
+     * with ~30% of the area covered.
+     */
+    const CENTER_IMAGE_URL =
+      'data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">' +
+        '<rect width="1" height="1" fill="#ffffff"/></svg>'
+      );
+
+    const qr = new QRCodeStyling({
+      width:  400,
+      height: 400,
+      type:   'svg',
+
+      // ── Replace with your real giveaway URL ────────────────────────────
+      data: 'https://fifthbase.aiprodava.com',
+
+      image: CENTER_IMAGE_URL,
+
+      qrOptions: {
+        errorCorrectionLevel: 'H',
+      },
+
+      imageOptions: {
+        imageSize:          0.28,
+        margin:             6,
+        hideBackgroundDots: true,
+        saveAsBlob:         false,
+      },
+
+      dotsOptions: {
+        type:  'square',
+        color: '#0a0a0b',
+      },
+
+      cornersSquareOptions: {
+        type:  'square',
+        color: '#0a0a0b',
+      },
+
+      cornersDotOptions: {
+        type:  'square',
+        color: '#f5b82e',
+      },
+
+      backgroundOptions: {
+        color: '#ffffff',
+      },
+    });
+
+    qr.append(document.getElementById('qr-mount'));
+
+    /*
+     * Inkscape (and some rasterisers) can't render an SVG-inside-SVG data URI
+     * embedded via <image>. After qr-code-styling paints into the DOM we swap
+     * that <image> for a plain <rect fill="white"> at the same coordinates —
+     * a native SVG primitive every tool understands.
+     */
+    requestAnimationFrame(() => {
+      const svg = document.querySelector('#qr-mount svg');
+      if (!svg) return;
+
+      const img = svg.querySelector('image');
+      if (!img) return;
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x',      img.getAttribute('x')      ?? '0');
+      rect.setAttribute('y',      img.getAttribute('y')      ?? '0');
+      rect.setAttribute('width',  img.getAttribute('width')  ?? '0');
+      rect.setAttribute('height', img.getAttribute('height') ?? '0');
+      rect.setAttribute('fill',   '#ffffff');
+
+      img.replaceWith(rect);
+    });
+  </script>
+</body>
+</html>

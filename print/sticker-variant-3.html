@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 3 · Cut-tolerant)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --ink:       #0a0a0b;
+      --gold:      #f5b82e;
+      --gold-dark: #9c7a26;
+      --cream:     #fffdf5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #d6d6d9; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /*
+     * CUT-TOLERANCE STRATEGY
+     * ─────────────────────────────────────────────────────────────────────────
+     * The outer sticker is pure ink (#0a0a0b) all the way to the physical edge.
+     * A cutter that drifts ±1–2 mm just reveals more or less dark border —
+     * indistinguishable from the intended design. No parallel lines near the
+     * edge means no visual ruler to measure the inconsistency against.
+     *
+     * The white content card sits 3.5 mm inward from every edge (the "safe
+     * zone"), well clear of any realistic cut variance.
+     *
+     * The only decorative accent (the gold diamond ◆) is rotated 45° — a
+     * diagonal is the hardest shape to judge for alignment error.
+     * ─────────────────────────────────────────────────────────────────────────
+     */
+
+    .sticker {
+      width:  60mm;
+      height: 60mm;
+      background: var(--ink);
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* gold diagonal accent stripe — top-right corner, 45°, non-parallel to any edge */
+    .sticker::before {
+      content: "";
+      position: absolute;
+      top:   -6mm;
+      right: -6mm;
+      width:  18mm;
+      height: 18mm;
+      background: var(--gold);
+      transform: rotate(45deg);
+      transform-origin: center;
+      opacity: 0.92;
+    }
+
+    /* small ink diamond punched out of the gold stripe — adds depth */
+    .sticker::after {
+      content: "";
+      position: absolute;
+      top:   2.4mm;
+      right: 2.4mm;
+      width:  3.2mm;
+      height: 3.2mm;
+      background: var(--ink);
+      transform: rotate(45deg);
+    }
+
+    /* ── White content card ───────────────────────────────────────────────── */
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width:  53mm;
+      height: 53mm;
+      background: var(--cream);
+      border-radius: 3.5mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3.8mm 3.5mm 3.5mm;
+    }
+
+    /* ── Logo row ─────────────────────────────────────────────────────────── */
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      width: 100%;
+    }
+
+    .logo-mark {
+      height: 8.5mm;
+      width:  8.5mm;
+      object-fit: contain;
+      filter: invert(1);
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-family: "Roboto Slab", Georgia, serif;
+      font-weight: 800;
+      font-size: 4.6mm;
+      letter-spacing: 0.15mm;
+      color: var(--ink);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ── QR code ──────────────────────────────────────────────────────────── */
+
+    .qr-wrap {
+      background: #fff;
+      padding: 1.2mm;
+      border-radius: 1.5mm;
+    }
+
+    .qr-wrap img {
+      width:  29mm;
+      height: 29mm;
+      display: block;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+
+    .foot {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1mm;
+    }
+
+    .blurb-pill {
+      background: var(--gold);
+      color: var(--ink);
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3.1mm;
+      letter-spacing: 0.1mm;
+      text-align: center;
+      line-height: 1;
+      padding: 1.8mm 4mm;
+      border-radius: 99mm;
+      white-space: nowrap;
+    }
+
+    @media screen {
+      .sticker {
+        border-radius: 4mm;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+
+    <!-- CARD · sits 3.5 mm inside the ink border = safe from any cut variance -->
+    <div class="card">
+
+      <!-- Row 1: logo -->
+      <div class="logo-row">
+        <img class="logo-mark" src="./logo-transparent-600.svg" alt="" aria-hidden="true" />
+        <span class="logo-name">Fifth Base</span>
+      </div>
+
+      <!-- Row 2: QR code · replace data= with your giveaway URL -->
+      <div class="qr-wrap">
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=H&data=https://fifthbase.example.com/giveaway"
+          alt="QR код за участие"
+        />
+      </div>
+
+      <!-- Row 3: text blurb -->
+      <div class="foot">
+        <p class="blurb-pill">Сканирай, за да участваш</p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

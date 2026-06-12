@@ -1,2 +1,4 @@
 # Build output — never commit compiled archives
 dist/
+node_modules/
+/vendor/

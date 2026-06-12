@@ -1,0 +1,15 @@
+{
+    "name": "sashe/fifthbase",
+    "autoload": {
+        "psr-4": {
+            "Sashe\\Fifthbase\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Sashe Vuchkov",
+            "email": "sashevuchkov@gmail.com"
+        }
+    ],
+    "require": {}
+}

@@ -17,5 +17,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "archive": "node scripts/archive.js"
+  },
+  "dependencies": {
+    "@chillerlan/qrcode": "^1.0.1",
+    "qr-code-styling": "^1.9.2"
   }
 }

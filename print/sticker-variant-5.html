@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Стикер 60&times;60 (Вариант 5 · Badge)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&family=Inter:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --ink:  #0a0a0b;
+      --gold: #f5b82e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: 60mm 60mm; margin: 0; }
+
+    html, body { background: #e9e9ec; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /*
+     * NO FRAME — white background to all edges.
+     * Cut-tolerance: every element is ≥ 5 mm from the edge.
+     * The ink badge for the logo is a fully rounded pill that floats
+     * in the centre of the top zone — its curved outline reads as an
+     * intentional shape, not a measurement reference.
+     */
+    .sticker {
+      width:  60mm;
+      height: 60mm;
+      background: #ffffff;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5mm 5mm 5.5mm;
+    }
+
+    /* ── Logo badge ───────────────────────────────────────────────────────── */
+
+    /* Dark pill floating well inside the sticker — no edge proximity */
+    .logo-badge {
+      background: var(--ink);
+      border-radius: 99mm;
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 1.8mm 3.5mm 1.8mm 2mm;
+    }
+
+    .logo-mark {
+      height: 7.5mm;
+      width:  7.5mm;
+      object-fit: contain;
+      /* white-on-transparent SVG renders white on the dark badge */
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-family: "Roboto Slab", Georgia, serif;
+      font-weight: 800;
+      font-size: 4.4mm;
+      letter-spacing: 0.2mm;
+      color: #ffffff;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ── QR code ──────────────────────────────────────────────────────────── */
+
+    .qr-wrap {
+      background: #fff;
+      padding: 0.8mm;
+      /* very faint warm shadow instead of a ruled border */
+      box-shadow: 0 0 0 0.4mm rgba(10,10,11,0.08);
+      border-radius: 1mm;
+    }
+
+    .qr-wrap img {
+      width:  30mm;
+      height: 30mm;
+      display: block;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+
+    .foot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2mm;
+    }
+
+    .stars {
+      color: var(--gold);
+      font-size: 2.8mm;
+      letter-spacing: 0.8mm;
+      line-height: 1;
+    }
+
+    .blurb {
+      font-family: "Roboto Slab", serif;
+      font-weight: 700;
+      font-size: 3.1mm;
+      letter-spacing: 0.05mm;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    @media screen {
+      .sticker { border-radius: 4mm; box-shadow: 0 12px 36px rgba(0,0,0,.22); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticker">
+
+    <!-- Row 1: logo inside a floating dark pill badge -->
+    <div class="logo-badge">
+      <img class="logo-mark" src="./logo-transparent-600.svg" alt="" aria-hidden="true" />
+      <span class="logo-name">Fifth Base</span>
+    </div>
+
+    <!-- Row 2: QR code -->
+    <div class="qr-wrap">
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=H&data=https://fifthbase.example.com/giveaway"
+        alt="QR код за участие"
+      />
+    </div>
+
+    <!-- Row 3: stars + text -->
+    <div class="foot">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="blurb">Сканирай, за да участваш</p>
+    </div>
+
+  </div>
+</body>
+</html>
