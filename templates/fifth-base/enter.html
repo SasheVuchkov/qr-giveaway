@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; Enter the World Cup Giveaway</title>
+  <meta name="description" content="Enter your details to register for the Fifth Base World Cup 2026 giveaway." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#0a0a0b",
+            charcoal: "#141417",
+            gold: "#f5b82e",
+            "gold-soft": "#ffd76a",
+            blaze: "#e11d2a",
+          },
+          fontFamily: {
+            display: ['Anton', 'sans-serif'],
+            brand: ['"Roboto Slab"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          keyframes: {
+            "fade-up": {
+              "0%": { opacity: "0", transform: "translateY(24px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" },
+            },
+          },
+          animation: { "fade-up": "fade-up 0.7s ease-out both" },
+        },
+      },
+    };
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .gold-shimmer {
+        background: linear-gradient(100deg, #f5b82e 20%, #fff3c4 50%, #f5b82e 80%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-ink font-sans text-white antialiased selection:bg-gold selection:text-ink">
+
+  <!-- HEADER -->
+  <header class="border-b border-white/5 bg-ink/80 backdrop-blur-md">
+    <div class="mx-auto flex max-w-3xl items-center justify-between px-5 py-3 lg:px-8">
+      <a href="./index.html" class="flex items-center gap-3">
+        <img src="./logo-big.png" alt="Fifth Base logo" class="h-11 w-11 rounded-lg object-cover ring-1 ring-white/10" />
+        <span class="font-brand text-lg font-extrabold tracking-tight sm:text-xl">FIFTH&nbsp;BASE</span>
+      </a>
+      <span class="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gold">World Cup 2026</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <img src="./fifth-base-brochure.jpg" alt="" aria-hidden="true" class="h-full w-full object-cover opacity-20" />
+      <div class="absolute inset-0 bg-gradient-to-b from-ink/90 via-ink/95 to-ink"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(245,184,46,0.16),transparent_55%)]"></div>
+    </div>
+
+    <div class="mx-auto flex max-w-xl flex-col items-center px-5 py-14 sm:py-20 lg:px-8">
+
+      <!-- Heading -->
+      <div class="animate-fade-up text-center">
+        <span class="text-3xl leading-none text-gold">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <h1 class="mt-4 font-display text-4xl uppercase leading-[0.95] tracking-tight sm:text-5xl">
+          Enter the <span class="gold-shimmer">Giveaway</span>
+        </h1>
+        <p class="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/70">
+          You&rsquo;re one step away. Fill in your details below to register your entry &mdash; then watch every World Cup match with us for your chance to win.
+        </p>
+      </div>
+
+      <!-- Form card -->
+      <form id="entryForm" novalidate class="mt-10 w-full animate-fade-up rounded-3xl border border-white/10 bg-charcoal/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8" style="animation-delay:120ms">
+
+        <!-- Name -->
+        <div class="mb-5">
+          <label for="name" class="mb-1.5 block text-sm font-semibold text-white/80">Full name <span class="text-blaze">*</span></label>
+          <input id="name" name="name" type="text" autocomplete="name" required
+            class="w-full rounded-xl border border-white/10 bg-ink/70 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/30"
+            placeholder="Jane Doe" />
+          <p data-error-for="name" class="mt-1.5 hidden text-xs font-medium text-blaze">Please enter your name.</p>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-5">
+          <label for="email" class="mb-1.5 block text-sm font-semibold text-white/80">Email address <span class="text-blaze">*</span></label>
+          <input id="email" name="email" type="email" autocomplete="email" required
+            class="w-full rounded-xl border border-white/10 bg-ink/70 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/30"
+            placeholder="jane@example.com" />
+          <p data-error-for="email" class="mt-1.5 hidden text-xs font-medium text-blaze">Please enter a valid email address.</p>
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-5">
+          <label for="phone" class="mb-1.5 block text-sm font-semibold text-white/80">Phone number <span class="font-normal text-white/40">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"
+            class="w-full rounded-xl border border-white/10 bg-ink/70 px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/30"
+            placeholder="+359 000 000 000" />
+        </div>
+
+        <!-- Privacy checkbox -->
+        <div class="mb-6">
+          <label class="flex cursor-pointer items-start gap-3 text-sm text-white/70">
+            <input id="privacy" name="privacy" type="checkbox" required
+              class="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-white/20 bg-ink text-gold accent-gold focus:ring-2 focus:ring-gold/40" />
+            <span>I&rsquo;ve read and accepted the <a href="#" class="font-semibold text-gold underline-offset-2 hover:underline">Privacy Policy</a>.</span>
+          </label>
+          <p data-error-for="privacy" class="mt-1.5 hidden text-xs font-medium text-blaze">You must accept the Privacy Policy to continue.</p>
+        </div>
+
+        <button type="submit"
+          class="group flex w-full items-center justify-center gap-2 rounded-full bg-gold px-6 py-3.5 text-base font-bold text-ink shadow-lg shadow-gold/20 transition hover:bg-gold-soft active:scale-[0.99]">
+          Register My Entry
+          <svg class="h-5 w-5 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+
+        <p class="mt-4 text-center text-xs text-white/40">Must be 18+ to enter. We&rsquo;ll only use your details for this giveaway.</p>
+      </form>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 bg-charcoal">
+    <div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-3 px-5 py-6 text-xs text-white/40 sm:flex-row lg:px-8">
+      <p>&copy; <span id="year"></span> Fifth Base. All rights reserved.</p>
+      <p>Every match. Every goal. Every chance to win.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const form = document.getElementById("entryForm");
+
+    const showError = (field, show) => {
+      const message = form.querySelector(`[data-error-for="${field}"]`);
+      const input = document.getElementById(field);
+      message.classList.toggle("hidden", !show);
+      if (input.type !== "checkbox") {
+        input.classList.toggle("border-blaze", show);
+        input.classList.toggle("border-white/10", !show);
+      }
+    };
+
+    const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+    const handleSubmit = (event) => {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value;
+      const privacyAccepted = document.getElementById("privacy").checked;
+
+      const nameInvalid = name.length === 0;
+      const emailInvalid = !isValidEmail(email);
+      const privacyInvalid = !privacyAccepted;
+
+      showError("name", nameInvalid);
+      showError("email", emailInvalid);
+      showError("privacy", privacyInvalid);
+
+      if (nameInvalid || emailInvalid || privacyInvalid) {
+        const firstInvalid = form.querySelector(".border-blaze, [data-error-for='privacy']:not(.hidden)");
+        if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      // In production: POST the form data to your backend here, then redirect.
+      window.location.href = "./confirmation.html";
+    };
+
+    form.addEventListener("submit", handleSubmit);
+
+    // Clear errors as the user corrects each field.
+    ["name", "email", "privacy"].forEach((field) => {
+      const input = document.getElementById(field);
+      const eventName = input.type === "checkbox" ? "change" : "input";
+      input.addEventListener(eventName, () => showError(field, false));
+    });
+  </script>
+</body>
+</html>

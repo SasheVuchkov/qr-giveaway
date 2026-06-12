@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fifth Base &mdash; World Cup Giveaway</title>
+  <meta name="description" content="Scan the QR code at Fifth Base to enter our World Cup 2026 giveaway and win a prize." />
+
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- QR code generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Google Fonts: Anton (display), Roboto Slab (brand), Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#0a0a0b",
+            charcoal: "#141417",
+            gold: "#f5b82e",
+            "gold-soft": "#ffd76a",
+            blaze: "#e11d2a",
+          },
+          fontFamily: {
+            display: ['Anton', 'sans-serif'],
+            brand: ['"Roboto Slab"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          keyframes: {
+            "fade-up": {
+              "0%": { opacity: "0", transform: "translateY(24px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" },
+            },
+            "pulse-ring": {
+              "0%": { transform: "scale(0.95)", opacity: "0.6" },
+              "70%": { transform: "scale(1.25)", opacity: "0" },
+              "100%": { transform: "scale(1.25)", opacity: "0" },
+            },
+            shimmer: {
+              "0%": { backgroundPosition: "-200% 0" },
+              "100%": { backgroundPosition: "200% 0" },
+            },
+          },
+          animation: {
+            "fade-up": "fade-up 0.7s ease-out both",
+            "pulse-ring": "pulse-ring 2.4s cubic-bezier(0.25,0.46,0.45,0.94) infinite",
+            shimmer: "shimmer 3.5s linear infinite",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-stroke {
+        -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.18);
+      }
+      .gold-shimmer {
+        background: linear-gradient(100deg, #f5b82e 20%, #fff3c4 40%, #f5b82e 60%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-ink font-sans text-white antialiased selection:bg-gold selection:text-ink">
+
+  <!-- ============ HEADER / NAVIGATION ============ -->
+  <header id="top" class="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-ink/80 backdrop-blur-md">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 lg:px-8">
+      <a href="#top" class="flex items-center gap-3">
+        <img src="./logo-big.png" alt="Fifth Base logo" class="h-11 w-11 rounded-lg object-cover ring-1 ring-white/10" />
+        <span class="font-brand text-lg font-extrabold tracking-tight text-white sm:text-xl">FIFTH&nbsp;BASE</span>
+      </a>
+
+      <ul class="hidden items-center gap-8 text-sm font-medium text-white/70 md:flex">
+        <li><a href="#top" class="nav-link transition">Home</a></li>
+        <li><a href="#giveaway" class="nav-link transition">Giveaway</a></li>
+        <li><a href="#how" class="nav-link transition">How It Works</a></li>
+        <li><a href="#prizes" class="nav-link transition">Prizes</a></li>
+      </ul>
+
+      <a href="#giveaway" class="hidden rounded-full bg-gold px-5 py-2 text-sm font-bold text-ink shadow-lg shadow-gold/20 transition hover:bg-gold-soft md:inline-block">
+        Enter Now
+      </a>
+
+      <button id="menuBtn" type="button" aria-label="Open menu" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/80 ring-1 ring-white/10 transition hover:bg-white/5 md:hidden">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden border-t border-white/5 bg-charcoal px-5 py-4 md:hidden">
+      <ul class="flex flex-col gap-3 text-sm font-medium text-white/80">
+        <li><a href="#top" class="nav-link-mobile block rounded-lg px-3 py-2 transition">Home</a></li>
+        <li><a href="#giveaway" class="nav-link-mobile block rounded-lg px-3 py-2 transition">Giveaway</a></li>
+        <li><a href="#how" class="nav-link-mobile block rounded-lg px-3 py-2 transition">How It Works</a></li>
+        <li><a href="#prizes" class="nav-link-mobile block rounded-lg px-3 py-2 transition">Prizes</a></li>
+        <li><a href="#giveaway" class="mt-1 block rounded-full bg-gold px-3 py-2 text-center font-bold text-ink">Enter Now</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+
+    <!-- HERO + GIVEAWAY -->
+    <section id="giveaway" class="relative overflow-hidden pb-20 pt-28 sm:pt-32">
+      <!-- Background brochure image + overlays -->
+      <div class="absolute inset-0 -z-10">
+        <img src="./fifth-base-brochure.jpg" alt="" aria-hidden="true" class="h-full w-full object-cover opacity-25" />
+        <div class="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/90 to-ink"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(245,184,46,0.18),transparent_55%)]"></div>
+      </div>
+
+      <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-8 lg:px-8">
+
+        <!-- Left: copy -->
+        <div class="text-center lg:text-left">
+          <div class="inline-flex animate-fade-up items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold">
+            <span class="relative flex h-2 w-2">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-75"></span>
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-gold"></span>
+            </span>
+            World Cup 2026 &middot; Live at Fifth Base
+          </div>
+
+          <h1 class="mt-6 animate-fade-up font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl" style="animation-delay:80ms">
+            World Cup
+            <span class="mt-1 block gold-shimmer animate-shimmer">Giveaway</span>
+          </h1>
+
+          <p class="mx-auto mt-6 max-w-md animate-fade-up text-lg leading-relaxed text-white/70 lg:mx-0" style="animation-delay:160ms">
+            Scan this QR code and fill out the form on the next page to enter our giveaway and win a prize.
+          </p>
+
+          <div class="mt-8 flex animate-fade-up flex-wrap items-center justify-center gap-3 lg:justify-start" style="animation-delay:240ms">
+            <span class="flex items-center gap-2 text-gold">
+              <span class="text-2xl leading-none">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            </span>
+            <span class="text-sm text-white/50">Every match. Every goal. Every chance to win.</span>
+          </div>
+        </div>
+
+        <!-- Right: QR card -->
+        <div class="animate-fade-up justify-self-center" style="animation-delay:200ms">
+          <div class="relative w-full max-w-sm">
+            <div class="absolute -inset-1 rounded-3xl bg-gradient-to-br from-gold via-blaze to-gold opacity-40 blur-lg"></div>
+
+            <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-charcoal/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+              <div class="mb-5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <img src="./logo-big.png" alt="" class="h-9 w-9 rounded-md object-cover ring-1 ring-white/10" />
+                  <span class="font-brand text-sm font-bold tracking-wide">FIFTH BASE</span>
+                </div>
+                <span class="rounded-full bg-blaze px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">Entry Pass</span>
+              </div>
+
+              <!-- QR -->
+              <div class="relative mx-auto flex aspect-square w-full max-w-[260px] items-center justify-center rounded-2xl bg-white p-4 shadow-inner">
+                <span class="pointer-events-none absolute inset-0 animate-pulse-ring rounded-2xl ring-2 ring-gold"></span>
+                <div id="qrcode" class="flex items-center justify-center" aria-label="Unique giveaway QR code"></div>
+              </div>
+
+              <p class="mt-5 text-center text-xs font-medium uppercase tracking-widest text-white/40">Your unique entry code</p>
+              <p id="entryCode" class="mt-1 text-center font-mono text-sm font-semibold tracking-wider text-gold">&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;</p>
+
+              <div class="mt-6 flex items-center justify-center gap-2 rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 text-center text-xs text-white/60">
+                <svg class="h-4 w-4 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9.5 12 4l9 5.5M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 20v-5h6v5" /></svg>
+                Point your phone camera at the code to begin
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="border-t border-white/5 bg-charcoal/40 py-20">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="font-display text-3xl uppercase tracking-tight sm:text-4xl">How It <span class="text-gold">Works</span></h2>
+          <p class="mt-3 text-white/60">Three quick steps to get in the game.</p>
+        </div>
+
+        <div class="mt-12 grid gap-6 sm:grid-cols-3">
+          <div class="group rounded-2xl border border-white/10 bg-ink/60 p-6 transition hover:border-gold/40 hover:bg-ink">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 font-display text-2xl text-gold">1</div>
+            <h3 class="mt-4 text-lg font-semibold">Scan the code</h3>
+            <p class="mt-2 text-sm leading-relaxed text-white/55">Use your phone camera to scan the unique QR code above.</p>
+          </div>
+          <div class="group rounded-2xl border border-white/10 bg-ink/60 p-6 transition hover:border-gold/40 hover:bg-ink">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 font-display text-2xl text-gold">2</div>
+            <h3 class="mt-4 text-lg font-semibold">Fill the form</h3>
+            <p class="mt-2 text-sm leading-relaxed text-white/55">Enter your details on the next page to register your entry.</p>
+          </div>
+          <div class="group rounded-2xl border border-white/10 bg-ink/60 p-6 transition hover:border-gold/40 hover:bg-ink">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 font-display text-2xl text-gold">3</div>
+            <h3 class="mt-4 text-lg font-semibold">Win a prize</h3>
+            <p class="mt-2 text-sm leading-relaxed text-white/55">Winners are drawn during the matches. Stay tuned and good luck!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIZES -->
+    <section id="prizes" class="py-20">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="font-display text-3xl uppercase tracking-tight sm:text-4xl">Match-Day <span class="text-gold">Prizes</span></h2>
+          <p class="mt-3 text-white/60">Special promotions during every World Cup match.</p>
+        </div>
+
+        <div class="mt-12 grid gap-6 md:grid-cols-2">
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-charcoal to-ink p-8">
+            <span class="absolute right-4 top-4 rounded-full bg-blaze px-3 py-1 text-[10px] font-bold uppercase tracking-widest">Free Beer</span>
+            <p class="font-display text-5xl text-gold">5 + 1</p>
+            <h3 class="mt-3 text-xl font-bold">Bucket of 5 ice-cold beers</h3>
+            <p class="mt-2 text-sm text-white/55">Order one type &mdash; the 6th beer is on the house.</p>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-charcoal to-ink p-8">
+            <span class="absolute right-4 top-4 rounded-full bg-blaze px-3 py-1 text-[10px] font-bold uppercase tracking-widest">Draft Tower</span>
+            <p class="font-display text-5xl text-gold">3L</p>
+            <h3 class="mt-3 text-xl font-bold">Draft beer dispenser</h3>
+            <p class="mt-2 text-sm text-white/55">5 large draft pours &mdash; the 6th is free.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t border-white/5 bg-charcoal">
+    <div class="mx-auto max-w-7xl px-5 py-12 lg:px-8">
+      <div class="grid gap-10 md:grid-cols-3">
+        <div>
+          <div class="flex items-center gap-3">
+            <img src="./logo-big.png" alt="Fifth Base logo" class="h-12 w-12 rounded-lg object-cover ring-1 ring-white/10" />
+            <span class="font-brand text-xl font-extrabold tracking-tight">FIFTH BASE</span>
+          </div>
+          <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/50">Watch every World Cup 2026 match with us &mdash; great atmosphere, every goal, every emotion.</p>
+          <p class="mt-4 text-lg text-gold">&#9733;&#9733;&#9733;&#9733;&#9733;</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold uppercase tracking-widest text-white/70">Explore</h4>
+          <ul class="mt-4 space-y-2 text-sm text-white/50">
+            <li><a href="#top" class="transition hover:text-gold">Home</a></li>
+            <li><a href="#giveaway" class="transition hover:text-gold">Giveaway</a></li>
+            <li><a href="#how" class="transition hover:text-gold">How It Works</a></li>
+            <li><a href="#prizes" class="transition hover:text-gold">Prizes</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold uppercase tracking-widest text-white/70">Visit Us</h4>
+          <ul class="mt-4 space-y-2 text-sm text-white/50">
+            <li>Reserve your spot for match day</li>
+            <li><a href="tel:+359000000000" class="transition hover:text-gold">+359 000 000 000</a></li>
+            <li><a href="mailto:hello@fifthbase.bg" class="transition hover:text-gold">hello@fifthbase.bg</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 text-xs text-white/40 sm:flex-row">
+        <p>&copy; <span id="year"></span> Fifth Base. All rights reserved.</p>
+        <p>Must be 18+ to enter. Terms &amp; conditions apply.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- Mobile menu toggle ---
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const handleMenuToggle = () => mobileMenu.classList.toggle("hidden");
+    menuBtn.addEventListener("click", handleMenuToggle);
+    mobileMenu.addEventListener("click", (event) => {
+      if (event.target.tagName === "A") mobileMenu.classList.add("hidden");
+    });
+
+    // --- Footer year ---
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // --- Unique entry code + QR generation ---
+    const STORAGE_KEY = "fifthbase_giveaway_entry";
+    // Points at the entry form. Use an absolute https URL in production so phones can open it.
+    const ENTRY_BASE_URL = new URL("./enter.html", window.location.href).href;
+
+    const createEntryId = () => {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+        const random = (Math.random() * 16) | 0;
+        const value = char === "x" ? random : (random & 0x3) | 0x8;
+        return value.toString(16);
+      });
+    };
+
+    const getEntryId = () => {
+      let id = localStorage.getItem(STORAGE_KEY);
+      if (!id) {
+        id = createEntryId();
+        localStorage.setItem(STORAGE_KEY, id);
+      }
+      return id;
+    };
+
+    const renderGiveawayQr = () => {
+      const entryId = getEntryId();
+      const entryUrl = `${ENTRY_BASE_URL}?code=${encodeURIComponent(entryId)}`;
+
+      new QRCode(document.getElementById("qrcode"), {
+        text: entryUrl,
+        width: 220,
+        height: 220,
+        colorDark: "#0a0a0b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+
+      document.getElementById("entryCode").textContent = entryId.split("-")[0].toUpperCase();
+    };
+
+    renderGiveawayQr();
+  </script>
+</body>
+</html>

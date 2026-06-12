@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <title>Confirm your email &mdash; Fifth Base Giveaway</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td, a { font-family: Arial, Helvetica, sans-serif !important; }
+  </style>
+  <![endif]-->
+</head>
+
+<!--
+  HTML EMAIL TEMPLATE: Confirmation (double opt-in)
+  Merge tags to replace via your email service:
+    {{name}}              -> recipient's first name
+    {{confirmation_url}}  -> the unique confirmation link
+    {{logo_url}}          -> absolute https URL of the logo (e.g. https://fifthbase.bg/logo-big.png)
+    {{privacy_url}}       -> link to your privacy policy
+  NOTE: email clients require ABSOLUTE https image URLs (relative paths will not load).
+-->
+
+<body style="margin:0; padding:0; background-color:#0a0a0b; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none; font-size:1px; color:#0a0a0b; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+    One click to confirm your email and complete your World Cup giveaway entry.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0b;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#141417; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding:28px 24px 20px 24px; background-color:#0a0a0b; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <img src="{{logo_url}}" width="56" height="56" alt="Fifth Base" style="display:block; border-radius:10px; border:0; outline:none; text-decoration:none;" />
+              <div style="font-family:'Roboto Slab',Georgia,serif; font-size:18px; font-weight:800; letter-spacing:0.5px; color:#ffffff; padding-top:10px;">FIFTH BASE</div>
+              <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#f5b82e; padding-top:6px;">World Cup 2026 Giveaway</div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 36px 8px 36px;">
+              <h1 style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:26px; line-height:1.2; font-weight:800; color:#ffffff;">
+                Confirm your email
+              </h1>
+              <p style="margin:18px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.6; color:#b8b8bd;">
+                Hi {{name}},
+              </p>
+              <p style="margin:14px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.6; color:#b8b8bd;">
+                Thanks for entering the <strong style="color:#ffffff;">Fifth Base World Cup Giveaway</strong>! You&rsquo;re almost in. To make sure we can reach you, please confirm your email address by clicking the button below.
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA button (bulletproof) -->
+          <tr>
+            <td align="center" style="padding:28px 36px 8px 36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#f5b82e" style="border-radius:999px;">
+                    <!--[if mso]>
+                    <a href="{{confirmation_url}}" style="background-color:#f5b82e; border-radius:999px; color:#0a0a0b; display:inline-block; font-family:Arial,sans-serif; font-size:16px; font-weight:bold; padding:15px 40px; text-decoration:none;">Confirm My Email &raquo;</a>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{confirmation_url}}" style="background-color:#f5b82e; border-radius:999px; color:#0a0a0b; display:inline-block; font-family:Arial,Helvetica,sans-serif; font-size:16px; font-weight:bold; padding:15px 40px; text-decoration:none;">Confirm My Email &raquo;</a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Fallback link -->
+          <tr>
+            <td style="padding:20px 36px 4px 36px;">
+              <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#7c7c83;">
+                If the button doesn&rsquo;t work, copy and paste this link into your browser:
+              </p>
+              <p style="margin:8px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; word-break:break-all;">
+                <a href="{{confirmation_url}}" style="color:#f5b82e; text-decoration:underline;">{{confirmation_url}}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:24px 36px;">
+              <div style="height:1px; background-color:rgba(255,255,255,0.08); line-height:1px; font-size:0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- Note -->
+          <tr>
+            <td style="padding:0 36px 32px 36px;">
+              <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:1.6; color:#7c7c83;">
+                Didn&rsquo;t sign up for this? No problem &mdash; just ignore this email and nothing will happen. This confirmation link will expire in 48 hours.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:24px; background-color:#0a0a0b; border-top:1px solid rgba(255,255,255,0.06);">
+              <div style="font-family:Arial,Helvetica,sans-serif; font-size:14px; color:#f5b82e; letter-spacing:2px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <p style="margin:10px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#6b6b71;">
+                Fifth Base &mdash; Every match. Every goal. Every chance to win.<br />
+                Must be 18+ to enter. <a href="{{privacy_url}}" style="color:#9a9aa0; text-decoration:underline;">Privacy Policy</a>
+              </p>
+              <p style="margin:8px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:11px; color:#55555b;">
+                &copy; 2026 Fifth Base. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
