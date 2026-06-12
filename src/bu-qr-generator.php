@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  BU QR Code Generator
  * Description:  Generate and manage QR code hashes for the bu-qr-code post type.
- * Version:      1.0.1
+ * Version:      1.0.6
  * Author:       Sashe Vuchkov
  * Text Domain:  bu-qr-generator
  */
@@ -66,7 +66,7 @@ function buqr_handle_generate(): void {
 
 		$post_id = wp_insert_post( [
 			'post_type'   => 'bu-qr-code',
-			'post_title'  => $hash,
+			'post_title'  => buqr_format_code( $hash ), // e.g. ACDF-M3QT-XY79
 			'post_status' => 'publish',
 		] );
 
@@ -92,12 +92,67 @@ function buqr_handle_generate(): void {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Unambiguous alphabet — removes characters that look alike on stickers/print:
+ *   removed: 0 (zero), O, 1, I, L, B (≈8), S (≈5), Z (≈2)
+ *   result:  25 characters, 3 groups of 4 → ~56 bits of entropy
+ *
+ * Codes are stored WITHOUT dashes (e.g. ACDFM3QTXY79) and displayed
+ * WITH dashes (ACDF-M3QT-XY79) via buqr_format_code().
+ */
+const BUQR_ALPHABET    = 'ACDEFGHJKMNPQRTUVWXY34679';
+const BUQR_CODE_LENGTH = 12;
+const BUQR_GROUP_SIZE  = 4;
+
+/**
+ * Returns a single unbiased random character from BUQR_ALPHABET.
+ * Uses rejection sampling to eliminate modulo bias.
+ */
+function buqr_random_char(): string {
+	$len = strlen( BUQR_ALPHABET );
+	$max = (int) floor( 256 / $len ) * $len - 1;
+
+	do {
+		$byte = ord( random_bytes( 1 ) );
+	} while ( $byte > $max );
+
+	return BUQR_ALPHABET[ $byte % $len ];
+}
+
+/**
+ * Generates a unique readable code like ACDFM3QTXY79 (stored without dashes).
+ */
 function buqr_unique_hash(): string {
 	do {
-		$hash = strtoupper( bin2hex( random_bytes( 16 ) ) ); // 32-char hex
-	} while ( buqr_hash_exists( $hash ) );
+		$code = '';
+		for ( $i = 0; $i < BUQR_CODE_LENGTH; $i++ ) {
+			$code .= buqr_random_char();
+		}
+	} while ( buqr_hash_exists( $code ) );
 
-	return $hash;
+	return $code;
+}
+
+/**
+ * Formats a stored code for display: ACDFM3QTXY79 → ACDF-M3QT-XY79.
+ * Falls back to the raw value for legacy 32-char hex codes.
+ */
+function buqr_format_code( string $code ): string {
+	$clean = strtoupper( str_replace( '-', '', $code ) );
+
+	if ( strlen( $clean ) === BUQR_CODE_LENGTH ) {
+		return implode( '-', str_split( $clean, BUQR_GROUP_SIZE ) );
+	}
+
+	return $code; // legacy hex code — return as-is
+}
+
+/**
+ * Normalises user input: strips dashes/spaces and uppercases.
+ * Allows users to type codes with or without separators.
+ */
+function buqr_normalise_code_input( string $raw ): string {
+	return strtoupper( preg_replace( '/[\s\-]/', '', sanitize_text_field( $raw ) ) );
 }
 
 function buqr_hash_exists( string $hash ): bool {
@@ -204,8 +259,12 @@ function buqr_get_post_id_by_confirmation_hash( string $c_hash ): int {
 }
 
 /**
- * Replaces template placeholders and sends the confirmation email.
+ * Replaces template placeholders and sends an email.
  * Returns true on successful wp_mail dispatch.
+ *
+ * Handles both raw {{key}} and TinyMCE/wp_kses HTML-entity-encoded
+ * variants (&#123;&#123;key&#125;&#125;) so placeholders are always
+ * substituted regardless of how the editor stored them.
  */
 function buqr_send_email( string $type, string $to, array $placeholders ): bool {
 	$tpl = buqr_get_email_template( $type );
@@ -214,11 +273,21 @@ function buqr_send_email( string $type, string $to, array $placeholders ): bool 
 		return false;
 	}
 
-	$search  = array_map( fn( $k ) => '{{' . $k . '}}', array_keys( $placeholders ) );
+	$keys    = array_keys( $placeholders );
 	$replace = array_values( $placeholders );
 
-	$subject = str_replace( $search, $replace, $tpl['subject'] );
-	$body    = str_replace( $search, $replace, $tpl['body'] );
+	// Build both the raw and HTML-entity-encoded search patterns.
+	$search_raw     = array_map( fn( $k ) => '{{' . $k . '}}',                              $keys );
+	$search_encoded = array_map( fn( $k ) => '&#123;&#123;' . $k . '&#125;&#125;',          $keys );
+	$search_curly   = array_map( fn( $k ) => "\u{007B}\u{007B}" . $k . "\u{007D}\u{007D}",  $keys );
+
+	$subject = $tpl['subject'];
+	$body    = $tpl['body'];
+
+	foreach ( [ $search_raw, $search_encoded, $search_curly ] as $search ) {
+		$subject = str_replace( $search, $replace, $subject );
+		$body    = str_replace( $search, $replace, $body );
+	}
 
 	$from    = sprintf( '%s <%s>', $tpl['from_name'], $tpl['from_email'] );
 	$headers = [
@@ -239,36 +308,56 @@ add_action( 'elementor_pro/forms/new_record', 'buqr_handle_elementor_form_submis
 function buqr_handle_elementor_form_submission( $record, $ajax_handler ): void {
 	$fields = $record->get( 'fields' );
 
-	// Only process forms that carry a unique_qr_code hidden field.
-	if ( empty( $fields['unique_qr_code']['value'] ) ) {
+	// Not a QR form — no field defined at all, nothing to do.
+	if ( ! array_key_exists( 'unique_qr_code', $fields ) ) {
 		return;
 	}
 
-	$hash = sanitize_text_field( $fields['unique_qr_code']['value'] );
+	$raw_value = $fields['unique_qr_code']['value'] ?? '';
 
-	// ── 1. Verify the code exists ──────────────────────────────────────────
-	$post_id = buqr_get_post_id_by_hash( $hash );
+	// ── 1. Field is present but empty ──────────────────────────────────────
+	if ( '' === trim( $raw_value ) ) {
+		$ajax_handler->add_error_message(
+			__( 'Please enter your QR code.', 'bu-qr-generator' )
+		);
+		return;
+	}
 
-	if ( ! $post_id ) {
-		$ajax_handler->add_error(
-			'unique_qr_code',
+	// Strip dashes/spaces and uppercase — accepts ACDF-M3QT-XY79 or ACDFM3QTXY79.
+	$hash = buqr_normalise_code_input( $raw_value );
+
+	// ── 2. Format check — new 12-char readable format OR legacy 32-char hex ─
+	$is_new_format = (bool) preg_match( '/^[ACDEFGHJKMNPQRTUVWXY34679]{12}$/', $hash );
+	$is_old_format = (bool) preg_match( '/^[A-F0-9]{32}$/', $hash );
+
+	if ( ! $is_new_format && ! $is_old_format ) {
+		$ajax_handler->add_error_message(
 			__( 'This QR code is not valid.', 'bu-qr-generator' )
 		);
 		return;
 	}
 
-	// ── 2. Verify the code has not already been claimed ────────────────────
-	$claimed_at = get_post_meta( $post_id, 'bu_claimed_at', true );
+	// ── 3. Code must exist in the database ─────────────────────────────────
+	$post_id = buqr_get_post_id_by_hash( $hash );
 
-	if ( ! empty( $claimed_at ) ) {
-		$ajax_handler->add_error(
-			'unique_qr_code',
-			__( 'This QR code has already been claimed.', 'bu-qr-generator' )
+	if ( ! $post_id ) {
+		$ajax_handler->add_error_message(
+			__( 'This QR code was not found. Please check and try again.', 'bu-qr-generator' )
 		);
 		return;
 	}
 
-	// ── 3. Extract participant details ─────────────────────────────────────
+	// ── 4. Code must not already be claimed ────────────────────────────────
+	$claimed_at = get_post_meta( $post_id, 'bu_claimed_at', true );
+
+	if ( ! empty( $claimed_at ) ) {
+		$ajax_handler->add_error_message(
+			__( 'This QR code has already been used.', 'bu-qr-generator' )
+		);
+		return;
+	}
+
+	// ── 5. Extract participant details ─────────────────────────────────────
 	$email = buqr_extract_email_from_fields( $fields );
 	$name  = buqr_extract_field_from_fields( $fields, [ 'name', 'full_name', 'your-name' ] );
 	$phone = buqr_extract_field_from_fields( $fields, [ 'phone', 'telephone', 'mobile' ], 'tel' );
@@ -279,7 +368,7 @@ function buqr_handle_elementor_form_submission( $record, $ajax_handler ): void {
 		return;
 	}
 
-	// ── 4. Record participant data & generate confirmation hash ────────────
+	// ── 6. Record participant data & generate confirmation hash ────────────
 	$c_hash = buqr_make_confirmation_hash( $email, $hash );
 
 	update_post_meta( $post_id, 'bu_participant_email', $email );
@@ -287,7 +376,7 @@ function buqr_handle_elementor_form_submission( $record, $ajax_handler ): void {
 	update_post_meta( $post_id, 'bu_participant_phone', $phone );
 	update_post_meta( $post_id, 'bu_confirmation_hash', $c_hash );
 
-	// ── 5. Send confirmation email ─────────────────────────────────────────
+	// ── 7. Send confirmation email ─────────────────────────────────────────
 	$confirmation_link = add_query_arg(
 		[ 'c_hash' => $c_hash ],
 		buqr_get_page_url( 'buqr_confirm_page_id' )
@@ -297,6 +386,8 @@ function buqr_handle_elementor_form_submission( $record, $ajax_handler ): void {
 		'qr_code'           => $hash,
 		'site_name'         => get_bloginfo( 'name' ),
 		'participant_name'  => $name,
+		'participant_email' => $email,
+		'participant_phone' => $phone,
 		'confirmation_link' => $confirmation_link,
 	];
 
@@ -304,7 +395,7 @@ function buqr_handle_elementor_form_submission( $record, $ajax_handler ): void {
 
 	buqr_send_email( 'confirmation', $email, $placeholders );
 
-	// ── 6. Stamp claimed + emailed timestamps ──────────────────────────────
+	// ── 8. Stamp claimed + emailed timestamps ──────────────────────────────
 	update_post_meta( $post_id, 'bu_claimed_at', $now );
 	update_post_meta( $post_id, 'bu_emailed_at', $now );
 }
@@ -332,8 +423,8 @@ function buqr_get_page_url( string $option_key ): string {
 /**
  * Intercepts any page request that carries ?c_hash=<value>.
  *
- * Valid hash   → marks bu_confirmed_at and lets the page load normally.
- * Invalid hash → redirects to the page set in Email Templates settings.
+ * Valid hash   → stamps bu_confirmed_at and redirects to the congratulations page.
+ * Invalid hash → redirects to the invalid-code page.
  */
 add_action( 'template_redirect', 'buqr_handle_confirmation_page' );
 
@@ -360,12 +451,161 @@ function buqr_handle_confirmation_page(): void {
 	}
 
 	wp_safe_redirect( add_query_arg(
-		[ 'code' => $qr_code ],
+		[ 'code' => buqr_format_code( $qr_code ) ],
 		buqr_get_page_url( 'buqr_congratulations_page_id' )
 	) );
 	exit;
+}
 
-	// Page continues to load normally — no exit.
+// ---------------------------------------------------------------------------
+// Post list — custom columns
+// ---------------------------------------------------------------------------
+
+add_filter( 'manage_bu-qr-code_posts_columns', 'buqr_add_list_columns' );
+
+function buqr_add_list_columns( array $columns ): array {
+	// Insert after the title column.
+	$insert = [
+		'buqr_status'    => __( 'Status', 'bu-qr-generator' ),
+		'buqr_claimed'   => __( 'Claimed', 'bu-qr-generator' ),
+		'buqr_emailed'   => __( 'Emailed', 'bu-qr-generator' ),
+		'buqr_confirmed' => __( 'Confirmed', 'bu-qr-generator' ),
+	];
+
+	$pos     = array_search( 'title', array_keys( $columns ), true );
+	$before  = array_slice( $columns, 0, $pos + 1, true );
+	$after   = array_slice( $columns, $pos + 1, null, true );
+
+	return $before + $insert + $after;
+}
+
+add_action( 'manage_bu-qr-code_posts_custom_column', 'buqr_render_list_column', 10, 2 );
+
+function buqr_render_list_column( string $column, int $post_id ): void {
+	switch ( $column ) {
+
+		case 'buqr_status':
+			$claimed = get_post_meta( $post_id, 'bu_claimed_at', true );
+			if ( $claimed ) {
+				echo '<span class="buqr-badge buqr-badge--used">'
+					. esc_html__( 'Used', 'bu-qr-generator' )
+					. '</span>';
+			} else {
+				echo '<span class="buqr-badge buqr-badge--free">'
+					. esc_html__( 'Available', 'bu-qr-generator' )
+					. '</span>';
+			}
+			break;
+
+		case 'buqr_claimed':
+			buqr_render_date_cell( get_post_meta( $post_id, 'bu_claimed_at', true ) );
+			break;
+
+		case 'buqr_emailed':
+			buqr_render_date_cell( get_post_meta( $post_id, 'bu_emailed_at', true ) );
+			break;
+
+		case 'buqr_confirmed':
+			buqr_render_date_cell( get_post_meta( $post_id, 'bu_confirmed_at', true ) );
+			break;
+	}
+}
+
+function buqr_render_date_cell( string $datetime ): void {
+	if ( ! $datetime ) {
+		echo '<span class="buqr-none">—</span>';
+		return;
+	}
+
+	$ts      = strtotime( $datetime );
+	$display = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $ts );
+
+	printf( '<span title="%s">%s</span>', esc_attr( $datetime ), esc_html( $display ) );
+}
+
+// ── Sortable columns ────────────────────────────────────────────────────────
+
+add_filter( 'manage_edit-bu-qr-code_sortable_columns', 'buqr_sortable_columns' );
+
+function buqr_sortable_columns( array $columns ): array {
+	$columns['buqr_status']    = 'buqr_status';
+	$columns['buqr_claimed']   = 'buqr_claimed';
+	$columns['buqr_emailed']   = 'buqr_emailed';
+	$columns['buqr_confirmed'] = 'buqr_confirmed';
+
+	return $columns;
+}
+
+add_action( 'pre_get_posts', 'buqr_sort_by_column' );
+
+function buqr_sort_by_column( WP_Query $query ): void {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+
+	if ( 'bu-qr-code' !== $query->get( 'post_type' ) ) {
+		return;
+	}
+
+	$orderby_map = [
+		'buqr_status'    => 'bu_claimed_at',
+		'buqr_claimed'   => 'bu_claimed_at',
+		'buqr_emailed'   => 'bu_emailed_at',
+		'buqr_confirmed' => 'bu_confirmed_at',
+	];
+
+	$orderby = $query->get( 'orderby' );
+
+	if ( ! isset( $orderby_map[ $orderby ] ) ) {
+		return;
+	}
+
+	$query->set( 'meta_key', $orderby_map[ $orderby ] );
+	$query->set( 'orderby',  'meta_value' );
+}
+
+// ── Column styles (inline, scoped to the list screen) ──────────────────────
+
+add_action( 'admin_head', 'buqr_column_styles' );
+
+function buqr_column_styles(): void {
+	$screen = get_current_screen();
+
+	if ( ! $screen || 'edit-bu-qr-code' !== $screen->id ) {
+		return;
+	}
+	?>
+	<style>
+		.column-buqr_status    { width: 90px; }
+		.column-buqr_claimed,
+		.column-buqr_emailed,
+		.column-buqr_confirmed { width: 140px; font-size: 12px; color: #50575e; }
+
+		.buqr-badge {
+			display: inline-block;
+			padding: 2px 9px;
+			border-radius: 10px;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: .4px;
+		}
+
+		.buqr-badge--free {
+			background: #edfaef;
+			color: #1a7734;
+			border: 1px solid #b8e6c1;
+		}
+
+		.buqr-badge--used {
+			background: #fce8e8;
+			color: #8f1e20;
+			border: 1px solid #f5c6c6;
+		}
+
+		.buqr-none { color: #c3c4c7; }
+	</style>
+	<?php
 }
 
 // ---------------------------------------------------------------------------
@@ -441,10 +681,14 @@ function buqr_handle_resend_email(): void {
 		buqr_get_page_url( 'buqr_confirm_page_id' )
 	);
 
+	$phone = get_post_meta( $post_id, 'bu_participant_phone', true );
+
 	$placeholders = [
 		'qr_code'           => $qr_code,
 		'site_name'         => get_bloginfo( 'name' ),
 		'participant_name'  => $name,
+		'participant_email' => $email,
+		'participant_phone' => (string) $phone,
 		'confirmation_link' => $confirmation_link,
 	];
 
@@ -720,14 +964,24 @@ function buqr_email_defaults( string $type ): array {
 			'from_name'  => $site,
 			'from_email' => $from,
 			'reply_to'   => $from,
-			'body'       => "<p>Hello,</p>\n<p>Please click the link below to confirm your QR code:</p>\n<p><a href=\"{{confirmation_link}}\">Confirm my code</a></p>\n<p>Thanks,<br>{{site_name}}</p>",
+			'body'       => implode( "\n", [
+				'<p>Hello {{participant_name}},</p>',
+				'<p>Please click the link below to confirm your QR code:</p>',
+				'<p><a href="{{confirmation_link}}">Confirm my code</a></p>',
+				'<p>Your code: <strong>{{qr_code}}</strong></p>',
+				'<p>Thanks,<br>{{site_name}}</p>',
+			] ),
 		],
 		'welcome'      => [
 			'subject'    => sprintf( __( 'Welcome to %s', 'bu-qr-generator' ), $site ),
 			'from_name'  => $site,
 			'from_email' => $from,
 			'reply_to'   => $from,
-			'body'       => "<p>Welcome!</p>\n<p>Your QR code <strong>{{qr_code}}</strong> is now active.</p>\n<p>Thanks,<br>{{site_name}}</p>",
+			'body'       => implode( "\n", [
+				'<p>Welcome {{participant_name}},</p>',
+				'<p>Your QR code <strong>{{qr_code}}</strong> is now active.</p>',
+				'<p>Thanks,<br>{{site_name}}</p>',
+			] ),
 		],
 	];
 
@@ -765,8 +1019,9 @@ function buqr_handle_save_email_templates(): void {
 		update_option( "buqr_email_{$type}", $data );
 	}
 
-	update_option( 'buqr_confirm_page_id', absint( $_POST['buqr_confirm_page_id'] ?? 0 ) );
-	update_option( 'buqr_invalid_page_id', absint( $_POST['buqr_invalid_page_id'] ?? 0 ) );
+	update_option( 'buqr_confirm_page_id',        absint( $_POST['buqr_confirm_page_id']        ?? 0 ) );
+	update_option( 'buqr_congratulations_page_id', absint( $_POST['buqr_congratulations_page_id'] ?? 0 ) );
+	update_option( 'buqr_invalid_page_id',         absint( $_POST['buqr_invalid_page_id']         ?? 0 ) );
 
 	wp_safe_redirect( add_query_arg(
 		[ 'page' => 'bu-qr-email-templates', 'buqr_saved' => '1' ],
@@ -924,18 +1179,29 @@ function buqr_render_email_templates_page(): void {
 											]
 										);
 										?>
-										<p class="description" style="margin-top:8px;">
-											<?php
-											$placeholders = ( 'confirmation' === $type )
-												? '{{confirmation_link}}, {{qr_code}}, {{site_name}}'
-												: '{{qr_code}}, {{site_name}}';
-											printf(
-												/* translators: %s = comma-separated placeholder list */
-												esc_html__( 'Available placeholders: %s', 'bu-qr-generator' ),
-												'<code>' . esc_html( $placeholders ) . '</code>'
-											);
-											?>
+										<?php
+										$all_vars = [
+											'{{participant_name}}'  => __( 'Participant\'s name', 'bu-qr-generator' ),
+											'{{participant_email}}' => __( 'Participant\'s email', 'bu-qr-generator' ),
+											'{{participant_phone}}' => __( 'Participant\'s phone', 'bu-qr-generator' ),
+											'{{qr_code}}'           => __( 'QR hash', 'bu-qr-generator' ),
+											'{{site_name}}'         => __( 'Site name', 'bu-qr-generator' ),
+										];
+										if ( 'confirmation' === $type ) {
+											$all_vars = [ '{{confirmation_link}}' => __( 'Confirmation URL', 'bu-qr-generator' ) ] + $all_vars;
+										}
+										?>
+										<p class="description" style="margin-top:10px;">
+											<strong><?php esc_html_e( 'Available placeholders:', 'bu-qr-generator' ); ?></strong>
 										</p>
+										<table class="buqr-vars-table">
+											<?php foreach ( $all_vars as $tag => $desc ) : ?>
+												<tr>
+													<td><code><?php echo esc_html( $tag ); ?></code></td>
+													<td><?php echo esc_html( $desc ); ?></td>
+												</tr>
+											<?php endforeach; ?>
+										</table>
 									</td>
 								</tr>
 
@@ -975,7 +1241,29 @@ function buqr_render_email_templates_page(): void {
 								] );
 								?>
 								<p class="description">
-									<?php esc_html_e( 'The page users land on after clicking the confirmation link. The c_hash parameter is appended to its URL.', 'bu-qr-generator' ); ?>
+									<?php esc_html_e( 'The page that processes the confirmation link. The ?c_hash= parameter is appended to its URL.', 'bu-qr-generator' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row">
+								<label for="buqr_congratulations_page_id">
+									<?php esc_html_e( 'Congratulations Page', 'bu-qr-generator' ); ?>
+								</label>
+							</th>
+							<td>
+								<?php
+								wp_dropdown_pages( [
+									'name'              => 'buqr_congratulations_page_id',
+									'id'                => 'buqr_congratulations_page_id',
+									'selected'          => (int) get_option( 'buqr_congratulations_page_id', 0 ),
+									'show_option_none'  => __( '— Select a page —', 'bu-qr-generator' ),
+									'option_none_value' => '0',
+								] );
+								?>
+								<p class="description">
+									<?php esc_html_e( 'Users land here after a valid confirmation. The formatted QR code is appended as ?code=XXXX-XXXX-XXXX.', 'bu-qr-generator' ); ?>
 								</p>
 							</td>
 						</tr>
@@ -1026,6 +1314,26 @@ function buqr_render_email_templates_page(): void {
 		/* Keep the editor label vertically aligned with the top of the editor */
 		.buqr-tpl-inside .form-table tr:last-child th {
 			padding-top: 14px;
+		}
+
+		.buqr-vars-table {
+			border-collapse: collapse;
+			margin-top: 6px;
+		}
+
+		.buqr-vars-table td {
+			padding: 3px 12px 3px 0;
+			vertical-align: middle;
+			font-size: 12px;
+			color: #50575e;
+		}
+
+		.buqr-vars-table td:first-child code {
+			font-size: 12px;
+			background: #f0f0f1;
+			padding: 2px 5px;
+			border-radius: 3px;
+			white-space: nowrap;
 		}
 	</style>
 	<?php
