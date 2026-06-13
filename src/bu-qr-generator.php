@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  BU QR Code Generator
  * Description:  Generate and manage QR code hashes for the bu-qr-code post type.
- * Version:      1.0.7
+ * Version:      1.0.8
  * Author:       Sashe Vuchkov
  * Text Domain:  bu-qr-generator
  */
@@ -32,6 +32,15 @@ function buqr_register_menu(): void {
 		'manage_options',
 		'bu-qr-email-templates',
 		'buqr_render_email_templates_page'
+	);
+
+	add_submenu_page(
+		'edit.php?post_type=bu-qr-code',
+		__( 'Generate URLs', 'bu-qr-generator' ),
+		__( 'Generate URLs', 'bu-qr-generator' ),
+		'manage_options',
+		'bu-qr-url-generator',
+		'buqr_render_url_generator_page'
 	);
 }
 
@@ -1352,5 +1361,205 @@ function buqr_render_email_templates_page(): void {
 			white-space: nowrap;
 		}
 	</style>
+	<?php
+}
+
+// ---------------------------------------------------------------------------
+// URL Generator — handler
+// ---------------------------------------------------------------------------
+
+add_action( 'admin_post_buqr_generate_urls', 'buqr_handle_generate_urls' );
+
+function buqr_handle_generate_urls(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( __( 'Unauthorized.', 'bu-qr-generator' ) );
+	}
+
+	check_admin_referer( 'buqr_generate_urls_action', 'buqr_urls_nonce' );
+
+	$url_template = sanitize_text_field( wp_unslash( $_POST['buqr_url_template'] ?? '' ) );
+	$redirect_base = admin_url( 'edit.php?post_type=bu-qr-code&page=bu-qr-url-generator' );
+
+	if ( empty( $url_template ) || strpos( $url_template, '{{code}}' ) === false ) {
+		wp_safe_redirect( add_query_arg( 'buqr_url_error', 'missing_placeholder', $redirect_base ) );
+		exit;
+	}
+
+	// Fetch all unclaimed QR codes.
+	$posts = get_posts( [
+		'post_type'      => 'bu-qr-code',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => [
+			'relation' => 'OR',
+			[
+				'key'     => 'bu_claimed_at',
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => 'bu_claimed_at',
+				'value'   => '',
+				'compare' => '=',
+			],
+		],
+	] );
+
+	if ( empty( $posts ) ) {
+		wp_safe_redirect( add_query_arg( 'buqr_url_error', 'no_codes', $redirect_base ) );
+		exit;
+	}
+
+	$urls = [];
+
+	foreach ( $posts as $post_id ) {
+		$raw_code = get_post_meta( $post_id, 'bu_qr_code', true );
+
+		if ( ! $raw_code ) {
+			continue;
+		}
+
+		$urls[] = str_replace( '{{code}}', buqr_format_code( $raw_code ), $url_template );
+	}
+
+	// Persist results for the redirect — keyed per user, expires in 5 min.
+	$transient_key = 'buqr_urls_' . get_current_user_id();
+	set_transient( $transient_key, [
+		'urls'     => $urls,
+		'template' => $url_template,
+	], 5 * MINUTE_IN_SECONDS );
+
+	wp_safe_redirect( add_query_arg( 'buqr_urls_ready', '1', $redirect_base ) );
+	exit;
+}
+
+// ---------------------------------------------------------------------------
+// URL Generator — page renderer
+// ---------------------------------------------------------------------------
+
+function buqr_render_url_generator_page(): void {
+	$transient_key = 'buqr_urls_' . get_current_user_id();
+	$result        = get_transient( $transient_key );
+	$ready         = isset( $_GET['buqr_urls_ready'] ) && '1' === $_GET['buqr_urls_ready'];
+	$error         = isset( $_GET['buqr_url_error'] ) ? sanitize_key( $_GET['buqr_url_error'] ) : '';
+
+	// Restore the template the user last used so it survives the redirect.
+	$last_template = is_array( $result ) ? $result['template'] : '';
+	$urls          = ( $ready && is_array( $result ) ) ? $result['urls'] : [];
+
+	$error_messages = [
+		'missing_placeholder' => __( 'Your URL must contain the <code>{{code}}</code> placeholder.', 'bu-qr-generator' ),
+		'no_codes'            => __( 'There are no unused QR codes available.', 'bu-qr-generator' ),
+	];
+
+	$total_unused = count( get_posts( [
+		'post_type'      => 'bu-qr-code',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => [
+			'relation' => 'OR',
+			[ 'key' => 'bu_claimed_at', 'compare' => 'NOT EXISTS' ],
+			[ 'key' => 'bu_claimed_at', 'value'   => '', 'compare' => '=' ],
+		],
+	] ) );
+	?>
+	<div class="wrap" id="buqr-url-wrap">
+		<h1><?php esc_html_e( 'Generate URLs', 'bu-qr-generator' ); ?></h1>
+
+		<?php if ( $error && isset( $error_messages[ $error ] ) ) : ?>
+			<div class="notice notice-error is-dismissible">
+				<p><?php echo wp_kses_post( $error_messages[ $error ] ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<div class="postbox" style="max-width:860px;margin-top:16px;">
+			<div class="postbox-header">
+				<h2 class="hndle"><?php esc_html_e( 'URL Template', 'bu-qr-generator' ); ?></h2>
+			</div>
+			<div class="inside" style="padding:16px 20px 20px;">
+
+				<p class="description" style="margin-bottom:14px;">
+					<?php
+					printf(
+						/* translators: %s = {{code}} */
+						esc_html__( 'Enter a URL containing %s. One URL will be generated per unused QR code (%d available).', 'bu-qr-generator' ),
+						'<code>{{code}}</code>',
+						$total_unused
+					);
+					?>
+				</p>
+
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="buqr_generate_urls">
+					<?php wp_nonce_field( 'buqr_generate_urls_action', 'buqr_urls_nonce' ); ?>
+
+					<input
+						type="url"
+						name="buqr_url_template"
+						id="buqr_url_template"
+						value="<?php echo esc_attr( $last_template ); ?>"
+						placeholder="https://example.com/claim/?qr={{code}}"
+						class="large-text"
+						style="font-family:monospace;font-size:14px;"
+						required
+					>
+
+					<div style="margin-top:14px;">
+						<?php submit_button( __( 'Generate URLs', 'bu-qr-generator' ), 'primary large', 'submit', false ); ?>
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+		<?php if ( $ready && ! empty( $urls ) ) : ?>
+			<div class="postbox" style="max-width:860px;margin-top:20px;">
+				<div class="postbox-header" style="display:flex;align-items:center;justify-content:space-between;">
+					<h2 class="hndle" style="margin:0;">
+						<?php
+						printf(
+							/* translators: %d = number of URLs */
+							esc_html__( '%d URL(s) generated', 'bu-qr-generator' ),
+							count( $urls )
+						);
+						?>
+					</h2>
+					<button type="button" id="buqr-copy-btn" class="button" style="margin-right:12px;">
+						<?php esc_html_e( 'Copy All', 'bu-qr-generator' ); ?>
+					</button>
+				</div>
+				<div class="inside" style="padding:0;">
+					<textarea
+						id="buqr-url-output"
+						readonly
+						style="width:100%;height:420px;font-family:monospace;font-size:13px;border:none;border-top:1px solid #c3c4c7;resize:vertical;padding:12px;box-sizing:border-box;line-height:1.7;"
+					><?php echo esc_textarea( implode( "\n", $urls ) ); ?></textarea>
+				</div>
+			</div>
+
+			<script>
+			document.getElementById( 'buqr-copy-btn' ).addEventListener( 'click', function () {
+				const ta  = document.getElementById( 'buqr-url-output' );
+				const btn = this;
+
+				ta.select();
+				ta.setSelectionRange( 0, ta.value.length );
+
+				navigator.clipboard.writeText( ta.value ).then( function () {
+					btn.textContent = '<?php echo esc_js( __( 'Copied!', 'bu-qr-generator' ) ); ?>';
+					setTimeout( function () {
+						btn.textContent = '<?php echo esc_js( __( 'Copy All', 'bu-qr-generator' ) ); ?>';
+					}, 2000 );
+				} );
+			} );
+			</script>
+		<?php elseif ( $ready && empty( $urls ) ) : ?>
+			<div class="notice notice-warning" style="max-width:860px;">
+				<p><?php esc_html_e( 'No URLs were generated — all matching codes had empty QR values.', 'bu-qr-generator' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+	</div><!-- .wrap -->
 	<?php
 }
