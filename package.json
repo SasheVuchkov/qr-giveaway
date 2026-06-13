@@ -18,10 +18,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "archive": "node scripts/archive.js",
     "generate-qr": "node scripts/generate-qr.js",
-    "compose-qr": "node scripts/compose-qr.js"
+    "compose-qr": "node scripts/compose-qr.js",
+    "compose-page": "node scripts/compose-page.js",
+    "export-pdf": "node scripts/export-pdf.js"
   },
   "dependencies": {
     "@chillerlan/qrcode": "^1.0.1",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^25.1.0",
     "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4"
   }

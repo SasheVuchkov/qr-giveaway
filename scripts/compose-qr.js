@@ -50,8 +50,8 @@ const QR_SCALE = (400 * 0.07224607) / 400;   // ≈ 0.087570
 //   rect598: x=97.808403, y=56.058754, w=6.8536611, h=6.9949727
 //   centre  = (97.808403 + 6.8536611/2, 56.058754 + 6.9949727/2)
 //           = (101.235234, 59.556240)
-const LOGO_SCALE = 0.85;
-const LOGO_CX    = 97.808403 + 6.8536611 / 2;   // 101.235234
+const LOGO_SCALE = 0.78;
+const LOGO_CX    = 98.908403 + 6.8536611 / 2;   // 101.235234
 const LOGO_CY    = 56.058754 + 6.9949727 / 2;   // 59.556240
 
 // ── SVG string helpers ────────────────────────────────────────────────────────
@@ -204,7 +204,14 @@ if (codeFiles.length === 0) {
 console.log('Parsing shared templates…');
 
 const bgSvg      = fs.readFileSync(bgPath, 'utf8');
-const bgLayer1   = removeGroup(getGroupInner(bgSvg, 'layer1'), 'g596').trim();
+const bgLayer1   = [
+  // g596  — hidden QR placeholder (not needed in composed output)
+  // g912  — full-page vertical cut lines  (page-level, must not repeat per card)
+  // g911  — full-page horizontal cut lines (page-level, must not repeat per card)
+  // g872  — left-margin white strip       (page-level)
+  // g898  — horizontal row separators     (page-level)
+  'g596', 'g912', 'g911', 'g872', 'g898',
+].reduce((svg, id) => removeGroup(svg, id), getGroupInner(bgSvg, 'layer1')).trim();
 
 const logoSvg    = fs.readFileSync(logoPath, 'utf8');
 const logoRect   = getElementById(logoSvg, 'rect598').trim();
