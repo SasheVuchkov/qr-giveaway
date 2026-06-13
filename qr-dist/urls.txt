@@ -1,5 +1,9 @@
 # One URL per line. Lines starting with '#' and blank lines are ignored.
-https://example.com
-https://example.com/page-one
-https://example.com/page-two
-https://example.com/page-three
+https://fifthbase.aiprodava.com/register/?code=KAAP-XEND-DT3P
+https://fifthbase.aiprodava.com/register/?code=63Y6-EPMR-MGRP
+https://fifthbase.aiprodava.com/register/?code=34PQ-Y93K-EHWP
+https://fifthbase.aiprodava.com/register/?code=DNDY-EXY6-7QHJ
+https://fifthbase.aiprodava.com/register/?code=3NMC-NDYT-RHRG
+https://fifthbase.aiprodava.com/register/?code=94RH-KH6Q-X7RF
+https://fifthbase.aiprodava.com/register/?code=RHJF-7QM4-RRTV
+https://fifthbase.aiprodava.com/register/?code=TFUT-NKCX-EHJA
